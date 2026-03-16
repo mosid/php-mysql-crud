@@ -1,0 +1,74 @@
+##
+## Stage 1: Install Composer dependencies
+##
+FROM composer:2 AS vendor
+
+WORKDIR /app
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-scripts --no-interaction --prefer-dist --optimize-autoloader
+
+##
+## Stage 2: Production image
+##
+FROM php:8.2-apache
+
+LABEL maintainer="php-mysql-crud"
+LABEL org.opencontainers.image.source="https://github.com/your-org/php-mysql-crud"
+
+ARG BUILD_DATE
+ARG VCS_REF
+LABEL org.opencontainers.image.created=$BUILD_DATE
+LABEL org.opencontainers.image.revision=$VCS_REF
+
+# Install PHP extensions
+RUN docker-php-ext-install mysqli opcache
+
+# Enable Apache modules
+RUN a2enmod rewrite headers
+
+# OPcache production settings
+RUN echo "opcache.enable=1\n\
+opcache.memory_consumption=128\n\
+opcache.max_accelerated_files=10000\n\
+opcache.validate_timestamps=0\n\
+opcache.interned_strings_buffer=16\n\
+opcache.fast_shutdown=1" > /usr/local/etc/php/conf.d/opcache.ini
+
+# PHP production hardening
+RUN echo "expose_php=Off\n\
+display_errors=Off\n\
+log_errors=On\n\
+error_log=/dev/stderr\n\
+date.timezone=UTC\n\
+memory_limit=128M\n\
+max_execution_time=30\n\
+upload_max_filesize=10M\n\
+post_max_size=10M" > /usr/local/etc/php/conf.d/production.ini
+
+WORKDIR /var/www/html
+
+# Copy Apache config
+COPY config/apache.conf /etc/apache2/sites-available/000-default.conf
+
+# Copy application source
+COPY src/ src/
+COPY database/ database/
+COPY config/ config/
+
+# Copy Composer dependencies from vendor stage
+COPY --from=vendor /app/vendor/ vendor/
+
+# Create log directory and set permissions
+RUN mkdir -p /var/log/apache2 \
+    && chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost/health || exit 1
+
+EXPOSE 80
+
+USER www-data
+
+CMD ["apache2-foreground"]

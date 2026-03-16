@@ -1,0 +1,14 @@
+vendor/
+.env
+.env.local
+.env*.local
+*.log
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.phpunit.result.cache
+.phpunit.cache/
+logs/
