@@ -8,10 +8,7 @@
 // Define the base path
 define('BASE_PATH', dirname(__DIR__));
 
-// Set up autoloading for the application
-require_once BASE_PATH . '/src/autoload.php';
-
-// Load PHPUnit autoloader
+// Load Composer autoloader (handles PSR-4 for App\ and Tests\ namespaces)
 require_once BASE_PATH . '/vendor/autoload.php';
 
 // Enable strict error reporting for tests
