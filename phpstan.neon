@@ -1,0 +1,8 @@
+parameters:
+    level: 6
+    paths:
+        - src
+    excludePaths:
+        - src/views
+        - src/autoload.php
+        - src/index.php
