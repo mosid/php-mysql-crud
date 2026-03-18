@@ -14,6 +14,8 @@ class User {
 
     /**
      * Get all users
+     *
+     * @return array<int, array<string, mixed>>
      */
     public function getAll(int $limit = 10, int $offset = 0): array {
         $stmt = $this->db->prepare("SELECT * FROM users ORDER BY created_at DESC LIMIT ? OFFSET ?");
@@ -34,6 +36,8 @@ class User {
 
     /**
      * Get user by ID
+     *
+     * @return array<string, mixed>|null
      */
     public function getById(int $id): ?array {
         $stmt = $this->db->prepare("SELECT * FROM users WHERE id = ?");
@@ -46,6 +50,8 @@ class User {
 
     /**
      * Create a new user
+     *
+     * @param array<string, mixed> $data
      */
     public function create(array $data): ?int {
         $stmt = $this->db->prepare("INSERT INTO users (name, email, phone) VALUES (?, ?, ?)");
@@ -62,6 +68,8 @@ class User {
 
     /**
      * Update an existing user
+     *
+     * @param array<string, mixed> $data
      */
     public function update(int $id, array $data): bool {
         $stmt = $this->db->prepare("UPDATE users SET name = ?, email = ?, phone = ? WHERE id = ?");
@@ -101,6 +109,8 @@ class User {
 
     /**
      * Search users by name or email
+     *
+     * @return array<int, array<string, mixed>>
      */
     public function search(string $query, int $limit = 10, int $offset = 0): array {
         $searchTerm = '%' . $query . '%';
